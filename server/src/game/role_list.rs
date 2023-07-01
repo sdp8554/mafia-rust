@@ -3,7 +3,7 @@ use std::vec;
 use rand::Rng;
 use serde::{Serialize, Deserialize};
 
-use super::role::Role;
+use super::{role::Role, recruit::Recruit};
 
 macro_rules! make_faction_enum {
     ($($name:ident),*)=>{
@@ -37,8 +37,7 @@ impl Faction{
                 FactionAlignment::TownInvestigative,
                 FactionAlignment::TownProtective,
                 FactionAlignment::TownKilling,
-                FactionAlignment::TownSupport,
-                FactionAlignment::TownTraitor
+                FactionAlignment::TownSupport
             ],
             Faction::Neutral => vec![
                 FactionAlignment::NeutralEvil,
@@ -48,8 +47,7 @@ impl Faction{
             Faction::Mafia => vec![
                 FactionAlignment::MafiaKilling,
                 FactionAlignment::MafiaDeception,
-                FactionAlignment::MafiaSupport,
-                FactionAlignment::MafiaTraitor
+                FactionAlignment::MafiaSupport
             ],
         }
     }
@@ -88,14 +86,12 @@ make_faction_alignment_enum!{
     MafiaKilling,
     MafiaDeception,
     MafiaSupport,
-    MafiaTraitor,
 
     TownPower,
     TownInvestigative,
     TownProtective,
     TownKilling,
     TownSupport,
-    TownTraitor,
 
     NeutralEvil,
     NeutralKilling,
@@ -109,13 +105,13 @@ make_faction_alignment_enum!{
 impl FactionAlignment{
     pub fn faction(&self)->Faction{
         match self {
-            Self::TownPower | Self::TownInvestigative | Self::TownProtective | Self::TownKilling | Self::TownSupport | Self::TownTraitor
+            Self::TownPower | Self::TownInvestigative | Self::TownProtective | Self::TownKilling | Self::TownSupport
                 => Faction::Town,
             Self::CovenPower |  Self::CovenKilling | Self::CovenUtility | Self::CovenDeception
                 => Faction::Coven,
             Self::NeutralEvil | Self::NeutralKilling | Self::NeutralChaos 
                 => Faction::Neutral,
-            Self::MafiaKilling | Self::MafiaDeception | Self::MafiaSupport | Self::MafiaTraitor
+            Self::MafiaKilling | Self::MafiaDeception | Self::MafiaSupport
                 => Faction::Mafia,
         }
     }
@@ -142,7 +138,7 @@ impl FactionAlignment{
     }
 }
 
-pub type RoleList = Vec<RoleListEntry>;
+pub type RoleList = Vec<(RoleListEntry, Option<Recruit>)>;
 pub fn create_random_roles(excluded_roles: &[RoleListEntry], role_list: &RoleList) -> Vec<Role> {
     let mut taken_roles = Vec::new();
     for entry in role_list{
@@ -162,7 +158,6 @@ pub enum RoleListEntry {
     Faction{faction: Faction},
     Any
 }
-
 impl RoleListEntry{
     pub fn get_random_role(&self, excluded_roles: &[RoleListEntry], taken_roles: &[Role]) -> Role {
         match self {
@@ -228,3 +223,5 @@ impl RoleListEntry{
     //     }).collect()
     // }
 }
+
+
