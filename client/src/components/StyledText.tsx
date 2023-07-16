@@ -3,7 +3,7 @@ import { marked } from "marked";
 import React, { ReactElement, useEffect, useState } from "react";
 import ReactDOMServer from "react-dom/server";
 import { Player } from "../game/gameState.d";
-import GAME_MANAGER, { regEscape } from "..";
+import GAME_MANAGER, { find } from "..";
 import translate from "../game/lang";
 import { Role, getFactionFromRole } from "../game/roleState.d";
 import ROLES from "../resources/roles.json";
@@ -44,15 +44,15 @@ export default function StyledText(props: { children: string[] | string, classNa
         )
     }];
 
-    for(const [stringToStyle, style] of Object.entries(KEYWORD_STYLE_MAP)){
+    for(const [keyword, style] of Object.entries(KEYWORD_STYLE_MAP)){
         // Using for..of or for..in is prone to errors, since we mutate the array as we loop through it,
         // which is why I've opted for a classical for loop to ensure completeness.
         for(let index = 0; index < tokens.length; index++) {
             const token = tokens[index];
             if (token.type !== "string") continue;
-
-            // Remove the stringToStyle and split so we can insert the styled text in its place
-            const stringSplit = token.string.split(RegExp(`(?<!\\w)${regEscape(stringToStyle)}(?!\\w)`, "gi"));
+            
+            // Remove the keyword and split so we can insert the styled text in its place
+            const stringSplit = token.string.split(find(keyword));
 
             if (stringSplit.length === 1) continue;
 
@@ -67,7 +67,7 @@ export default function StyledText(props: { children: string[] | string, classNa
 
                 replacement.push({
                     type: "styled",
-                    string: stringToStyle,
+                    string: keyword,
                     className: style
                 });
             }

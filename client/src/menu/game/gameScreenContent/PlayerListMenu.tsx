@@ -1,6 +1,6 @@
 import React from "react";
 import translate from "../../../game/lang";
-import GAME_MANAGER, { regEscape } from "../../../index";
+import GAME_MANAGER, { find } from "../../../index";
 import "./playerListMenu.css"
 import "./../gameScreen.css"
 import ChatMenu from "./ChatMenu";
@@ -109,7 +109,7 @@ export default class PlayerListMenu extends React.Component<PlayerListMenuProps,
                             <StyledText>{(player.alive?"":" ("+translate("dead")+")")}</StyledText>
                 </button>
                 {(() => {
-                    const filter = RegExp(`(?<!\\w)${regEscape(player.name)}(?!\\w)`, "i");
+                    const filter = find(player.name);
                     const isFilterSet = ChatMenu.getFilter()?.source === filter.source;
                     
                     return <button 
@@ -184,9 +184,18 @@ export default class PlayerListMenu extends React.Component<PlayerListMenuProps,
     }
 
     render(){return(<div className="player-list-menu">
-        
-        <button onClick={()=>{GameScreen.instance.closeMenu(ContentMenus.PlayerListMenu)}}>{translate("menu.playerList.title")}</button>
-        <br/> {/* TODO remove this BR */}
+        <div>
+            <div>
+                <StyledText>
+                    {translate("menu.playerList.title")}
+                </StyledText>
+            </div>
+
+            <button onClick={()=>{
+                GameScreen.instance.closeMenu(ContentMenus.PlayerListMenu)
+            }}>✕</button>
+        </div>
+
         {this.renderFilterButton("all")}
         {this.renderFilterButton("living")}
         {this.renderFilterButton("usable")}
