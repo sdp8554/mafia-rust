@@ -1,7 +1,7 @@
 
-use mafia_server::websocket_connections::websocket_listener::create_ws_server;
+use mafia_server::{websocket_connections::websocket_listener::create_ws_server, log};
 use serde::Deserialize;
-use std::fs;
+use std::{fs, thread, time::Duration};
 
 #[derive(Deserialize)]
 struct Config{
@@ -19,6 +19,11 @@ async fn main() {
     let config = serde_json::from_str::<Config>(
         &fs::read_to_string("./resources/config.json").expect("Failed to read the config file")
     ).unwrap();
-    
-    create_ws_server(&config.address).await
+
+    loop {
+        create_ws_server(&config.address).await;
+        // This delay is only to make sure disconnect messages are sent before the server restarts
+        thread::sleep(Duration::from_secs(1));
+        log!(important "Main"; "Restarting server...");
+    }
 }
