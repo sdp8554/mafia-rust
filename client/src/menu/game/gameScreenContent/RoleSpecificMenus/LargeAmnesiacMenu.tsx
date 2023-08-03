@@ -17,6 +17,9 @@ export default class LargeAmnesiacMenu extends React.Component<LargeAmnesiacMenu
     constructor(props: LargeAmnesiacMenuState) {
         super(props);
 
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
+
         let defaultRole: RoleOutline;
         if(
             GAME_MANAGER.gameState.roleState?.role === "amnesiac" && 
@@ -34,6 +37,10 @@ export default class LargeAmnesiacMenu extends React.Component<LargeAmnesiacMenu
             localRoleOutline: defaultRole
         };
         this.listener = (type)=>{
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+                
             this.setState({
                 gameState: GAME_MANAGER.gameState
             });

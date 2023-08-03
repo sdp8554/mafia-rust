@@ -18,6 +18,9 @@ export default class WillMenu extends React.Component<{}, WillMenuState> {
     listener: StateListener
     constructor(props: {}) {
         super(props);
+        
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
 
         let gameStateFields = {
             will: GAME_MANAGER.gameState.will,
@@ -30,6 +33,10 @@ export default class WillMenu extends React.Component<{}, WillMenuState> {
             localFields: gameStateFields
         };
         this.listener = (type) => {
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+
             if (type === "yourWill" || type === "yourNotes" || type === "yourDeathNote") {
                 this.setState({
                     syncedFields: {
@@ -48,6 +55,10 @@ export default class WillMenu extends React.Component<{}, WillMenuState> {
         GAME_MANAGER.removeStateListener(this.listener);
     }
     send(type: FieldType) {
+        
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
+            
         this.save(type);
         GAME_MANAGER.sendSendMessagePacket('\n' + replaceMentions(
             this.state.localFields[type],

@@ -13,11 +13,18 @@ export default class SmallRoleSpecificMenu extends React.Component<SmallRoleSpec
     listener: () => void;
     constructor(props: SmallRoleSpecificMenuProps) {
         super(props);
+        
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
 
         this.state = {
             gameState : GAME_MANAGER.gameState,
         };
         this.listener = ()=>{
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+                
             this.setState({
                 gameState: GAME_MANAGER.gameState
             })

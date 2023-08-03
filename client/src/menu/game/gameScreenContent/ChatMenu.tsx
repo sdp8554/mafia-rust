@@ -47,6 +47,9 @@ export default class ChatMenu extends React.Component<ChatMenuProps, ChatMenuSta
     constructor(props: ChatMenuProps) {
         super(props);
         
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
+        
         this.state = {
             gameState: GAME_MANAGER.gameState,
             chatField: "",
@@ -54,7 +57,11 @@ export default class ChatMenu extends React.Component<ChatMenuProps, ChatMenuSta
         };
 
         this.listener = () => {
-            let atTop = this.messageSection !== null && this.messageSection.scrollTop >= this.messageSection.scrollHeight - this.messageSection.clientHeight - 100;            
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+            
+                let atTop = this.messageSection !== null && this.messageSection.scrollTop >= this.messageSection.scrollHeight - this.messageSection.clientHeight - 100;            
             this.setState({
                 gameState: GAME_MANAGER.gameState
             }, () => {

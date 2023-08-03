@@ -25,12 +25,14 @@ export default function ChatElement(props: {message: ChatMessage}): ReactElement
         }
         
         if (
-            find(GAME_MANAGER.gameState.myName ?? "").test(message.text) ||
+            GAME_MANAGER.gameState.type === "game" &&
             (
-                GAME_MANAGER.gameState.myIndex !== null &&
-                find("" + (GAME_MANAGER.gameState.myIndex + 1)).test(message.text)
+                find(GAME_MANAGER.gameState.name ?? "").test(message.text) ||
+                (
+                    GAME_MANAGER.gameState.index !== null &&
+                    find("" + (GAME_MANAGER.gameState.index + 1)).test(message.text)
+                )
             )
-            
         ) {
             style += " mention";
         } 

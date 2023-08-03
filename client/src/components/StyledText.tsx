@@ -91,6 +91,7 @@ function getKeywordData(): KeywordDataMap {
 
     const DATA = require("../resources/keywords.json");
 
+    if(GAME_MANAGER.gameState.type === "game")
     for(const player of GAME_MANAGER.gameState.players) {
         keywordData[player.toString()] = [
             { style: "keyword-player-number", replacement: (player.index + 1).toString() },

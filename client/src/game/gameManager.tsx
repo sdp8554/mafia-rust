@@ -16,7 +16,6 @@ export function createGameManager(): GameManager {
     
     let gameManager: GameManager = {
         roomCode: null,
-        playerId: null,
 
         gameState : createGameState(),
 
@@ -50,9 +49,9 @@ export function createGameManager(): GameManager {
         },
 
         leaveGame() {
-            if (this.gameState.inGame) {
-                this.server.sendPacket({type: "leave"});
-            }
+            
+            this.server.sendPacket({type: "leave"});
+                
             // Set URL to main menu and refresh
             window.history.replaceState({}, document.title, window.location.pathname);
             window.location.reload();
@@ -212,13 +211,16 @@ export function createGameManager(): GameManager {
         },
     
         tick(timePassedMs) {
-            const newTimeLeft = gameManager.gameState.timeLeftMs - timePassedMs;
-            if (Math.floor(newTimeLeft / 1000) < Math.floor(gameManager.gameState.timeLeftMs / 1000)) {
+            if(GAME_MANAGER.gameState.type !== "game")
+                throw new Error("type = game expected");
+            
+            const newTimeLeft = GAME_MANAGER.gameState.timeLeftMs - timePassedMs;
+            if (Math.floor(newTimeLeft / 1000) < Math.floor(GAME_MANAGER.gameState.timeLeftMs / 1000)) {
                 gameManager.invokeStateListeners("tick");
             }
-            gameManager.gameState.timeLeftMs = newTimeLeft;
-            if (gameManager.gameState.timeLeftMs < 0) {
-                gameManager.gameState.timeLeftMs = 0;
+            GAME_MANAGER.gameState.timeLeftMs = newTimeLeft;
+            if (GAME_MANAGER.gameState.timeLeftMs < 0) {
+                GAME_MANAGER.gameState.timeLeftMs = 0;
             }
         },
     }

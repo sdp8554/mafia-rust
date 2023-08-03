@@ -24,15 +24,22 @@ export default class PlayerListMenu extends React.Component<PlayerListMenuProps,
 
     constructor(props: PlayerListMenuProps) {
         super(props);
+        
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
 
         this.state = {
             gameState : GAME_MANAGER.gameState,
             playerFilter: Anchor.isMobile() ? "all" : "living",
         };
         this.listener = (type)=>{
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+
             let playerFilter = this.state.playerFilter;
             if(type==="phase"){
-                if(!Anchor.isMobile() && (GAME_MANAGER.gameState.myIndex===null || GAME_MANAGER.gameState.players[GAME_MANAGER.gameState.myIndex].alive)){
+                if(!Anchor.isMobile() && (GAME_MANAGER.gameState.index===null || GAME_MANAGER.gameState.players[GAME_MANAGER.gameState.index].alive)){
                     if(GAME_MANAGER.gameState.phase === "night"){
                         playerFilter = "usable"
                     }else if(GAME_MANAGER.gameState.phase === "morning"){
@@ -138,8 +145,14 @@ export default class PlayerListMenu extends React.Component<PlayerListMenuProps,
                 </div>
                 <div className="target">
                     {((player) => {
+                        if(GAME_MANAGER.gameState?.type !== "game")
+                            throw new Error("type = game expected");
                         if(player.buttons.target) {
-                            return <button onClick={() => GAME_MANAGER.sendTargetPacket([...GAME_MANAGER.gameState.targets, player.index])}>
+                            return <button onClick={() => {
+                                if(GAME_MANAGER.gameState?.type !== "game")
+                                    throw new Error("type = game expected");
+                                GAME_MANAGER.sendTargetPacket([...GAME_MANAGER.gameState.targets, player.index])
+                            }}>
                                 {translate("role."+this.state.gameState.roleState?.role+".target")}
                             </button>
                         } else if (this.state.gameState.phase === "night" && this.state.gameState.targets.includes(player.index)) {

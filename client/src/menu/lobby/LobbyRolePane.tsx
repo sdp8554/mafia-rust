@@ -16,6 +16,9 @@ export default class LobbyRolePane extends React.Component<{}, RolePaneState> {
 
     constructor(props: {}){
         super(props);
+        
+        if(GAME_MANAGER.gameState?.type !== "lobby")
+            throw new Error("Lobby menu cant be rendered with wrong state");
 
         this.state = {
             roleList: GAME_MANAGER.gameState.roleList,
@@ -23,6 +26,9 @@ export default class LobbyRolePane extends React.Component<{}, RolePaneState> {
         }
 
         this.listener = () => {
+            if(GAME_MANAGER.gameState?.type !== "lobby")
+                throw new Error("Lobby menu cant be rendered with wrong state");
+            
             this.setState({
                 roleList: GAME_MANAGER.gameState.roleList,
                 host: GAME_MANAGER.gameState.host

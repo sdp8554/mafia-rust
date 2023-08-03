@@ -46,6 +46,10 @@ export default class LargeDoomsayerMenu extends React.Component<LargeDoomsayerMe
     constructor(props: LargeDoomsayerMenuState) {
         super(props);
 
+        
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
+
         let defaultGuess: [
             [number, DoomsayerGuess],
             [number, DoomsayerGuess],
@@ -67,6 +71,10 @@ export default class LargeDoomsayerMenu extends React.Component<LargeDoomsayerMe
             localDoomsayerGuesses: defaultGuess
         };
         this.listener = (type)=>{
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+                
             this.setState({
                 gameState: GAME_MANAGER.gameState
             });

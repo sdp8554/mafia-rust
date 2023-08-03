@@ -21,11 +21,18 @@ export default class HeaderMenu extends React.Component<HeaderMenuProps, HeaderM
     
     constructor(props: HeaderMenuProps) {
         super(props);
+        
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
 
         this.state = {
             gameState: GAME_MANAGER.gameState,
         };
         this.listener = () => {
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+
             this.setState({
                 gameState: GAME_MANAGER.gameState,
             });
@@ -48,9 +55,9 @@ export default class HeaderMenu extends React.Component<HeaderMenuProps, HeaderM
                             {this.state.gameState.players[this.state.gameState.playerOnTrial!]?.toString()}
                         </StyledText>
                     {(()=>{
-                        if (this.state.gameState.playerOnTrial === this.state.gameState.myIndex) {
+                        if (this.state.gameState.playerOnTrial === this.state.gameState.index) {
                             return <div className="judgement-info">{translate("judgement.cannotVote.onTrial")}</div>;
-                        } else if (!this.state.gameState.players[this.state.gameState.myIndex!].alive){
+                        } else if (!this.state.gameState.players[this.state.gameState.index!].alive){
                             return <div className="judgement-info">{translate("judgement.cannotVote.dead")}</div>;
                         } else {
                             return(<div className="judgement-info">
@@ -64,7 +71,7 @@ export default class HeaderMenu extends React.Component<HeaderMenuProps, HeaderM
                 </div>);
             }else{
                 return(<div> 
-                    ERROR NO PLAYER ON TRIAL FOUND IN JUDGEMENT PHASE TODO 
+                    ERROR NO PLAYER ON TRIAL FOUND IN JUDGEMENT PHASE + LANG TODO 
                 </div>);
             }
             
@@ -139,9 +146,9 @@ export default class HeaderMenu extends React.Component<HeaderMenuProps, HeaderM
     render(){return(<div className="header-menu">
         {this.renderPhase()}
         {(()=>{
-            if(this.state.gameState.myIndex !== null){
+            if(this.state.gameState.index !== null){
                 return <StyledText>
-                    {this.state.gameState.players[this.state.gameState.myIndex].toString() +
+                    {this.state.gameState.players[this.state.gameState.index].toString() +
                     " (" + translate("role."+this.state.gameState.roleState?.role+".name") + ")"}
                 </StyledText>;
             }

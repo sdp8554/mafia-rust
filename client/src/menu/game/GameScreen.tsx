@@ -58,6 +58,10 @@ export default class GameScreen extends React.Component<GameScreenProps, GameScr
 
     constructor(props: GameScreenProps) {
         super(props);
+        
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
+
         GameScreen.instance = this;
         this.state = {
             maxContent: props.maxContent?props.contentMenus.length:Infinity,
@@ -71,6 +75,9 @@ export default class GameScreen extends React.Component<GameScreenProps, GameScr
         };
 
         this.listener = ()=>{
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+            
             this.setState({
                 gameState: GAME_MANAGER.gameState,
             });
@@ -154,6 +161,9 @@ export default class GameScreen extends React.Component<GameScreenProps, GameScr
     }
 
     render() {
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
+            
         return (
             <div className="game-screen">
                 <button className="leave-button" onClick={() => GAME_MANAGER.leaveGame()}>

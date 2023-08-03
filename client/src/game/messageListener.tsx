@@ -1,5 +1,5 @@
 
-import { createPlayer } from "./gameState";
+import { createGameState, createLobbyPlayer, createPlayer } from "./gameState";
 import Anchor from "./../menu/Anchor";
 import LobbyMenu from "./../menu/lobby/LobbyMenu";
 import StartMenu from "./../menu/main/StartMenu";
@@ -15,8 +15,11 @@ export default function messageListener(packet: ToClientPacket){
     console.log(JSON.stringify(packet, null, 2));
     switch(packet.type) {
         case "acceptJoin":
-            GAME_MANAGER.gameState.inGame = packet.inGame;
-            GAME_MANAGER.playerId = packet.playerId;
+            
+        //TODO
+            // GAME_MANAGER.gameState.inGame = packet.inGame;
+            // GAME_MANAGER.gameState?.id = packet.playerId;
+
             if(packet.inGame){
                 Anchor.setContent(GameScreen.createDefault());
             }else{
@@ -61,8 +64,12 @@ export default function messageListener(packet: ToClientPacket){
             }
         break;
         case "acceptHost":
+            
+            if(GAME_MANAGER.gameState?.type !== "lobby")
+                throw new Error("type = game expected");
+
             GAME_MANAGER.roomCode = packet.roomCode.toString(18);
-            GAME_MANAGER.playerId = packet.playerId;
+            GAME_MANAGER.gameState.id = packet.playerId;
             GAME_MANAGER.gameState.host = true;
             Anchor.setContent(<LobbyMenu/>);
         break;
@@ -70,31 +77,45 @@ export default function messageListener(packet: ToClientPacket){
         In Lobby/Game 
         */
         case "yourName":
-            GAME_MANAGER.gameState.myName = packet.name;
+            GAME_MANAGER.gameState.name = packet.name;
         break;
         case "yourPlayerIndex":
-            GAME_MANAGER.gameState.myIndex = packet.playerIndex;
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+            GAME_MANAGER.gameState.index = packet.playerIndex;
         break;
         case "players":
             GAME_MANAGER.gameState.players = [];
-            for(let i = 0; i < packet.players.length; i++){
-                if (GAME_MANAGER.gameState.players.length > i) {
-                    GAME_MANAGER.gameState.players[i].name = packet.players[i][1];
-                    GAME_MANAGER.gameState.players[i].id = packet.players[i][0];
-                } else {
-                    GAME_MANAGER.gameState.players.push(createPlayer(packet.players[i][1], i, packet.players[i][0]));
+            
+            if(GAME_MANAGER.gameState?.type === "game"){
+                for(let i = 0; i < packet.players.length; i++){
+                    if (GAME_MANAGER.gameState.players.length > i) {
+                        GAME_MANAGER.gameState.players[i].name = packet.players[i][1];
+                    } else {
+                        GAME_MANAGER.gameState.players.push(createPlayer(packet.players[i][1], i));
+                    }
+                }
+            }else{
+                for(let i = 0; i < packet.players.length; i++){
+                    if (GAME_MANAGER.gameState.players.length > i) {
+                        GAME_MANAGER.gameState.players[i].name = packet.players[i][1];
+                    } else {
+                        GAME_MANAGER.gameState.players.push(createLobbyPlayer(packet.players[i][1], i));
+                    }
                 }
             }
+            
         break;
         case "kickPlayer":
-            if(packet.playerId === GAME_MANAGER.playerId){
+            if(packet.playerId === GAME_MANAGER.gameState.id){
                 GAME_MANAGER.leaveGame();
             }
             // GAME_MANAGER.gameState = createGameState();
             // Anchor.setContent(<StartMenu/>)
         break;
         case "startGame":
-            GAME_MANAGER.gameState.inGame = true;
+            GAME_MANAGER.gameState = GAME_MANAGER.gameState = createGameState();
             Anchor.setContent(GameScreen.createDefault());
         break;
         case "roleList":
@@ -115,23 +136,37 @@ export default function messageListener(packet: ToClientPacket){
             GAME_MANAGER.gameState.excludedRoles = packet.roles;
         break;
         case "youAreHost":
+            
+            if(GAME_MANAGER.gameState?.type !== "lobby")
+                throw new Error("type = lobby expected");
+            
             GAME_MANAGER.gameState.host = true;
             Anchor.pushInfo("You are host", "The previous host left and you have become the host.")
         break;
         case "phase":
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+
             GAME_MANAGER.gameState.phase = packet.phase;
             GAME_MANAGER.gameState.dayNumber = packet.dayNumber;
             GAME_MANAGER.gameState.timeLeftMs = packet.secondsLeft * 1000;
         break;
         case "playerOnTrial":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.playerOnTrial = packet.playerIndex;
         break;
         case "playerAlive":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             for(let i = 0; i < GAME_MANAGER.gameState.players.length && i < packet.alive.length; i++){
                 GAME_MANAGER.gameState.players[i].alive = packet.alive[i];
             }
         break;
         case "playerVotes":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             for(let i = 0; i < GAME_MANAGER.gameState.players.length; i++){
                 GAME_MANAGER.gameState.players[i].numVoted = 0;
             }
@@ -140,48 +175,72 @@ export default function messageListener(packet: ToClientPacket){
             }
         break;
         case "yourButtons":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             for(let i = 0; i < GAME_MANAGER.gameState.players.length && i < packet.buttons.length; i++){
                 GAME_MANAGER.gameState.players[i].buttons = packet.buttons[i];
             }
         break;
         case "yourRoleLabels":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             for (const [key, value] of Object.entries(packet.roleLabels)) { 
                 GAME_MANAGER.gameState.players[Number.parseInt(key)].roleLabel = value as Role;
             }
         break;
         case "yourPlayerTags":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             for (const [key, value] of Object.entries(packet.playerTags)) { 
                 GAME_MANAGER.gameState.players[Number.parseInt(key)].playerTags = value as Tag[];
             }
         break;
         case "yourWill":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.will = packet.will;
         break;
         case "yourNotes":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.notes = packet.notes;
         break;
         case "yourDeathNote":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.deathNote = packet.deathNote ?? "";
         break;
         case "yourRoleState":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             if(GAME_MANAGER.gameState.roleState?.role!== packet.roleState.role){
                 GameScreen.instance?.closeMenu(ContentMenus.RoleSpecificMenu);
             }
             GAME_MANAGER.gameState.roleState = packet.roleState;
         break;
         case "yourTarget":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.targets = packet.playerIndices;
         break;
         case "yourVoting":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.voted = packet.playerIndex;
         break;
         case "yourJudgement":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.judgement = packet.verdict;
         break;
         case "addChatMessages":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.chatMessages = GAME_MANAGER.gameState.chatMessages.concat(packet.chatMessages);
         break;
         case "addGrave":
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
             GAME_MANAGER.gameState.graves.push(packet.grave);
         break;
         case "gameOver":

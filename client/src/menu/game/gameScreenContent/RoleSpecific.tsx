@@ -18,10 +18,17 @@ export default class RoleSpecificMenu extends React.Component<RoleSpecificMenuPr
     constructor(props: RoleSpecificMenuProps) {
         super(props);
 
+        if(GAME_MANAGER.gameState?.type !== "game")
+            throw new Error("type = game expected");
+
         this.state = {
             gameState : GAME_MANAGER.gameState,
         };
         this.listener = ()=>{
+            
+            if(GAME_MANAGER.gameState?.type !== "game")
+                throw new Error("type = game expected");
+            
             this.setState({
                 gameState: GAME_MANAGER.gameState
             })

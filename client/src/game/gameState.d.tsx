@@ -3,14 +3,47 @@ import { ChatMessage } from "../components/ChatMessage";
 import { Role, RoleState } from "./roleState.d";
 import { RoleOutline } from "./roleListState.d";
 
-export default interface GameState {
-    inGame: boolean;
 
-    myName: string | null,
-    myIndex: PlayerIndex | null,
+
+export interface LobbyState {
+    type: "lobby",
+
+    name: string,
     host: boolean,
+    id: PlayerID,
+
+    players: LobbyPlayer[],
+
+    //settings 
+    roleList: RoleOutline[],
+    excludedRoles: RoleOutline[],
+    phaseTimes: PhaseTimes
+}
+
+export type PlayerID = number;
+export interface LobbyPlayer{
+    name: string,
+    id: PlayerID,
+
+    toString(): string
+}
+
+export default interface GameState {
+    type: "game",
+
+    name: string,
+    index: PlayerIndex,
+    id: PlayerID,
 
     chatMessages : ChatMessage[],
+    roleState: RoleState | null,
+    will: string,
+    notes: string,
+    deathNote: string,
+    targets: PlayerIndex[],
+    voted: PlayerIndex | null,
+    judgement: Verdict,
+
     graves: Grave[],
     players: Player[],
     
@@ -19,45 +52,17 @@ export default interface GameState {
     timeLeftMs: number,
     dayNumber: number,
 
-    roleState: RoleState | null,
-
-    will: string,
-    notes: string,
-    deathNote: string,
-    targets: PlayerIndex[],
-    voted: PlayerIndex | null,
-    judgement: Verdict,
-    
+    //settings
     roleList: RoleOutline[],
     excludedRoles: RoleOutline[],
     phaseTimes: PhaseTimes
 }
 
 export type PlayerIndex = number;
-export type PlayerID = number;
-export type Verdict = "innocent"|"guilty"|"abstain";
-export type Phase = "morning" | "discussion" | "voting" | "testimony" | "judgement" | "evening" | "night"
-
-export interface PhaseTimes {
-    "morning": number,
-    "discussion": number,
-    "voting": number,
-    "testimony": number,
-    "judgement": number,
-    "evening": number,
-    "night": number,
-}
-export type Tag =
-| "doused"
-| "hexed"
-| "necronomicon"
-| "executionerTarget"
-| "insane"
-
 export interface Player {
     name: string,
-    index: number
-    id: number,
+    index: number,
+
     buttons: {
         dayTarget: boolean,
         target: boolean,
@@ -70,5 +75,27 @@ export interface Player {
 
     toString(): string
 }
+export type Tag =
+| "doused"
+| "hexed"
+| "necronomicon"
+| "executionerTarget"
+| "insane"
+
+
+export type Verdict = "innocent" | "guilty" | "abstain";
+export type Phase = "morning" | "discussion" | "voting" | "testimony" | "judgement" | "evening" | "night";
+
+export interface PhaseTimes {
+    "morning": number,
+    "discussion": number,
+    "voting": number,
+    "testimony": number,
+    "judgement": number,
+    "evening": number,
+    "night": number,
+}
+
+
 
 

@@ -20,6 +20,10 @@ export default class LobbyExcludedRoles extends React.Component<{}, ExcludedRole
     constructor(props: {}){
         super(props);
 
+        if(GAME_MANAGER.gameState?.type !== "lobby")
+            throw new Error("Lobby menu cant be rendered with wrong state");
+        
+
         this.state = {
             excludedRoles: GAME_MANAGER.gameState.excludedRoles,
             roleOutline: {type:"any"},
@@ -27,9 +31,11 @@ export default class LobbyExcludedRoles extends React.Component<{}, ExcludedRole
         }
 
         this.listener = () => {
+            if(GAME_MANAGER.gameState?.type !== "lobby")
+                throw new Error("Lobby menu cant be rendered with wrong state");
             this.setState({
-                excludedRoles: GAME_MANAGER.gameState.excludedRoles,
-                host: GAME_MANAGER.gameState.host
+                excludedRoles: GAME_MANAGER.gameState?.excludedRoles,
+                host: GAME_MANAGER.gameState?.host
             });
         };
     }

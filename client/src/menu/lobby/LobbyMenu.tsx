@@ -19,13 +19,20 @@ type LobbyMenuState = {
 export default class LobbyMenu extends React.Component<LobbyMenuProps, LobbyMenuState> {
     constructor(props: LobbyMenuProps) {
         super(props);
+        
+        if(GAME_MANAGER.gameState?.type !== "lobby")
+            throw new Error("Lobby menu cant be rendered with wrong state");
+
         this.state = {
             name: "",
             host: GAME_MANAGER.gameState.host
         }
         this.listener = (type)=>{
+            
+            if(GAME_MANAGER.gameState?.type !== "lobby")
+                throw new Error("Lobby menu cant be rendered with wrong state");
             this.setState({
-                name: GAME_MANAGER.gameState.myName!,
+                name: GAME_MANAGER.gameState.name!,
                 host: GAME_MANAGER.gameState.host
             });
         }
@@ -64,6 +71,9 @@ export default class LobbyMenu extends React.Component<LobbyMenuProps, LobbyMenu
 
 // There's probably a better way to do this that doesn't need the mobile check.
 function LobbyMenuHeader(props: { host?: boolean }): JSX.Element {
+    if(GAME_MANAGER.gameState?.type !== "lobby")
+        throw new Error("Lobby menu cant be rendered with wrong state");
+        
     if (Anchor.isMobile()) {
         return <header>
             <div>
@@ -75,7 +85,7 @@ function LobbyMenuHeader(props: { host?: boolean }): JSX.Element {
                     {translate("menu.lobby.button.start")}
                 </button>
             </div>
-            <h1>{GAME_MANAGER.gameState.myName!}</h1>
+            <h1>{GAME_MANAGER.gameState.name!}</h1>
         </header>
     } else {
         return <header>
@@ -83,7 +93,7 @@ function LobbyMenuHeader(props: { host?: boolean }): JSX.Element {
                 {translate("menu.button.leave")}
             </button>
             <RoomCodeButton/>
-            <h1>{GAME_MANAGER.gameState.myName!}</h1>
+            <h1>{GAME_MANAGER.gameState.name!}</h1>
             <button disabled={!props.host} className="start" onClick={()=>{GAME_MANAGER.sendStartGamePacket()}}>
                 {translate("menu.lobby.button.start")}
             </button>

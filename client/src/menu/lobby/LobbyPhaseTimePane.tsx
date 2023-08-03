@@ -21,6 +21,9 @@ export default class LobbyPhaseTimePane extends React.Component<{}, PhaseTimePan
     listener: StateListener;
     constructor(props: {}) {
         super(props);
+        
+        if(GAME_MANAGER.gameState?.type !== "lobby")
+            throw new Error("Lobby menu cant be rendered with wrong state");
 
         let initialPhaseTimes = GAME_MANAGER.gameState.phaseTimes ?? {...PHASE_TIME_MODES.get("Classic")!};
 
@@ -32,6 +35,9 @@ export default class LobbyPhaseTimePane extends React.Component<{}, PhaseTimePan
         };
 
         this.listener = (type)=>{
+            if(GAME_MANAGER.gameState?.type !== "lobby")
+                throw new Error("Lobby menu cant be rendered with wrong state");
+                
             if(type==="phaseTime" || type==="phaseTimes")
                 this.setState({
                     mode: this.determineModeFromPhaseTimes(GAME_MANAGER.gameState.phaseTimes),

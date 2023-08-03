@@ -2,19 +2,23 @@ import React from "react";
 import translate from "../../game/lang";
 import GAME_MANAGER from "../../index";
 import "./lobbyMenu.css";
-import { Player } from "../../game/gameState.d";
+import { LobbyPlayer } from "../../game/gameState.d";
 import { StateListener } from "../../game/gameManager.d";
 import StyledText from "../../components/StyledText";
 
 interface PlayerListState {
     enteredName: string,
-    players: Player[],
+    players: LobbyPlayer[],
     host: boolean
 }
 
 export default class LobbyPlayerList extends React.Component<{}, PlayerListState> {
     listener: StateListener;
     constructor(props: {}) {
+        
+        if(GAME_MANAGER.gameState?.type !== "lobby")
+            throw new Error("Lobby menu cant be rendered with wrong state");
+
         super(props);
 
         this.state = {     
@@ -23,6 +27,9 @@ export default class LobbyPlayerList extends React.Component<{}, PlayerListState
             host: GAME_MANAGER.gameState.host
         };
         this.listener = ()=>{
+            if(GAME_MANAGER.gameState?.type !== "lobby")
+                throw new Error("Lobby menu cant be rendered with wrong state");
+
             this.setState({
                 players: GAME_MANAGER.gameState.players,
                 host: GAME_MANAGER.gameState.host
