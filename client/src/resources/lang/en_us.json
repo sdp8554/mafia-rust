@@ -534,11 +534,15 @@
     "wiki.entry.role.witch.attributes":"* You can force a player to target up to two living players, this is useful for roles like framer, transporter, and seer\n* Your first target is the player you're possessing, the second and third targets are the players they're targeting",
 
     "wiki.entry.role.janitor.title": "Janitor",
-    "wiki.entry.role.janitor.abilities":"* Clean a player on the night they die",
+    "wiki.entry.role.janitor.abilities":"* Clean a player on the night they die, this has 3 uses",
     "wiki.entry.role.janitor.attributes":"* Cleaning a player erases the role and will from their grave\n* You will know the role and will of a player you clean",
     
+    "wiki.entry.role.forger.title": "Forger",
+    "wiki.entry.role.forger.abilities":"* Forge a players role and will on the night they die",
+    "wiki.entry.role.forger.attributes":"* Forging a player changes their role and will on their grave\n* You will know the role and will of a player you forge",
+
     "wiki.entry.role.framer.title": "Framer",
-    "wiki.entry.role.framer.abilities":"* Target two players to frame the first one",
+    "wiki.entry.role.framer.abilities":"* Target two players to frame the first one, this has 2 uses",
     "wiki.entry.role.framer.attributes":"* The framed player will look like the mafioso to town investigative roles\n* It will look like first target visited your second target, non attacking\n* You can only choose non mafia members for your first target, but anyone as your second target\n* Your second visit is astral",
     
     "wiki.entry.role.jester.title": "Jester",
@@ -564,7 +568,7 @@
     "wiki.entry.role.amnesiac.title": "Amnesiac",
     "wiki.entry.role.amnesiac.abilities":"* Choose a role and become that role at night",
     "wiki.entry.role.amnesiac.attributes":"* Roleblocking doesn't effect changing roles",
-    
+
     "wiki.entry.role.vampire.title": "Vampire",
     "wiki.entry.role.vampire.abilities":"* Bite a player to convert them to a vampire",
     "wiki.entry.role.vampire.attributes":"* Only the newest vampire can choose to bite\n* Vampires can not bite on the night immediately following a night that they successfully converted another vampire\n* You can not convert a player with defense\n* If there are four or more vampires, they can not choose to bite someone",

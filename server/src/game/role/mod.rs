@@ -74,6 +74,7 @@ macros::roles! {
     Necromancer : necromancer,
 
     Janitor : janitor,
+    Forger: forger,
     Framer : framer,
 
     // Neutral

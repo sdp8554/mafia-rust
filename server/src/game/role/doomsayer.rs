@@ -50,7 +50,7 @@ impl DoomsayerGuess{
             //Mafia
             Role::Mafioso | 
             Role::Consort | Role::Blackmailer | Role::Consigliere | Role::Witch | Role::Necromancer |
-            Role::Janitor | Role::Framer => Some(DoomsayerGuess::Mafia),
+            Role::Janitor | Role::Forger | Role::Framer => Some(DoomsayerGuess::Mafia),
             //Neutral
             Role::Jester | Role::Executioner | Role::Doomsayer | Role::Politician |
             Role::Death |
