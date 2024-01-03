@@ -110,7 +110,7 @@ export function translateChatMessage(message: ChatMessage): string {
             let deathCause: string;
             if (message.grave.deathCause.type === "lynching") {
                 deathCause = translate("grave.deathCause.lynching")
-            } else {
+            } else if (message.grave.deathCause.type === "killers"){
                 let killers: string[] = [];
                 for (let killer of message.grave.deathCause.killers) {
                     if(killer.type === "role") {
@@ -121,7 +121,9 @@ export function translateChatMessage(message: ChatMessage): string {
                         killers.push(translate(`grave.killer.${killer.type}`))
                     }
                 }
-                deathCause = killers.join();
+                deathCause = killers.join(", ");
+            }else{
+                deathCause = translate(`grave.deathCause.${message.grave.deathCause.type}`)
             }
 
             return translate(message.grave.will.length === 0 ? "chatMessage.playerDied.noWill": "chatMessage.playerDied",
@@ -204,6 +206,12 @@ export function translateChatMessage(message: ChatMessage): string {
             } else {
                 return translate("chatMessage.jailorDecideExecute.nobody");
             }
+        case "godfatherBackup":
+            if (message.backup !== null) {
+                return translate("chatMessage.godfatherBackup", GAME_MANAGER.state.players[message.backup].toString());
+            } else {
+                return translate("chatMessage.godfatherBackup.nobody");
+            }
         /* NIGHT */
         case "roleBlocked":
             return translate("chatMessage.roleBlocked" + (message.immune ? ".immune" : ""));
@@ -269,8 +277,6 @@ export function translateChatMessage(message: ChatMessage): string {
         case "youWereProtected":
         case "executionerWon":
         case "gameOver":
-        case "godfatherForcedMafioso":
-        case "godfatherForcedYou":
         case "jesterWon":
         case "mayorCantWhisper":
         case "targetJailed":
@@ -439,9 +445,8 @@ export type ChatMessage = {
 } | {
     type: "transported"
 } | {
-    type: "godfatherForcedMafioso"
-} | {
-    type: "godfatherForcedYou"
+    type: "godfatherBackup",
+    backup: PlayerIndex | null
 } | {
     type: "silenced"
 } | {

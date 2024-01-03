@@ -1,11 +1,8 @@
 
-import { createGameState, createLobbyState, createPlayer } from "./gameState";
+import { createPlayer } from "./gameState";
 import Anchor from "./../menu/Anchor";
-import LobbyMenu from "./../menu/lobby/LobbyMenu";
-import StartMenu from "./../menu/main/StartMenu";
 import GAME_MANAGER from "./../index";
 import GameScreen, { ContentMenus } from "./../menu/game/GameScreen";
-import React from "react";
 import { ToClientPacket } from "./packet";
 import { Tag } from "./gameState.d";
 import { Role } from "./roleState.d";
@@ -17,62 +14,73 @@ export default function messageListener(packet: ToClientPacket){
 
 
     switch(packet.type) {
+        case "rateLimitExceeded":
+            Anchor.pushError(translate("notification.rateLimitExceeded"), "");
+        break;
+        case "lobbyList":
+            if(GAME_MANAGER.state.stateType === "outsideLobby")
+                GAME_MANAGER.state.roomCodes = packet.roomCodes.map((roomCode) => roomCode.toString(18));
+        break;
         case "acceptJoin":
             if(packet.inGame){
-                GAME_MANAGER.state = createGameState();
-                Anchor.setContent(GameScreen.createDefault());
+                GAME_MANAGER.setGameState();
             }else{
-                GAME_MANAGER.state = createLobbyState();
-                Anchor.setContent(<LobbyMenu/>);
+                GAME_MANAGER.setLobbyState();
             }
-            GAME_MANAGER.roomCode = packet.roomCode.toString(18);
+            if(GAME_MANAGER.state.stateType === "lobby" || GAME_MANAGER.state.stateType === "game"){
+                GAME_MANAGER.state.roomCode = packet.roomCode.toString(18);
+            }
             if(GAME_MANAGER.state.stateType === "lobby")
                 GAME_MANAGER.state.myId = packet.playerId;
+
+            GAME_MANAGER.saveReconnectData(packet.roomCode.toString(18), packet.playerId);
         break;
         case "rejectJoin":
             switch(packet.reason) {
-                case "invalidRoomCode":
-                    Anchor.pushInfo(translate("notification.rejectJoin"), translate("notification.rejectJoin.invalidRoomCode"));
+                case "roomDoesntExist":
+                    Anchor.pushError(translate("notification.rejectJoin"), translate("notification.rejectJoin.roomDoesntExist"));
                 break;
                 case "gameAlreadyStarted":
-                    Anchor.pushInfo(translate("notification.rejectJoin"), translate("notification.rejectJoin.gameAlreadyStarted"));
+                    Anchor.pushError(translate("notification.rejectJoin"), translate("notification.rejectJoin.gameAlreadyStarted"));
                 break;
                 case "roomFull":
-                    Anchor.pushInfo(translate("notification.rejectJoin"), translate("notification.rejectJoin.roomFull"));
+                    Anchor.pushError(translate("notification.rejectJoin"), translate("notification.rejectJoin.roomFull"));
                 break;
                 case "serverBusy":
-                    Anchor.pushInfo(translate("notification.rejectJoin"), translate("notification.rejectJoin.serverBusy"));
+                    Anchor.pushError(translate("notification.rejectJoin"), translate("notification.rejectJoin.serverBusy"));
+                break;
+                case "playerTaken":
+                    Anchor.pushError(translate("notification.rejectJoin"), translate("notification.rejectJoin.playerTaken"));
+                break;
+                case "playerDoesntExist":
+                    Anchor.pushError(translate("notification.rejectJoin"), translate("notification.rejectJoin.playerDoesntExist"));
                 break;
                 default:
-                    Anchor.pushInfo(translate("notification.rejectJoin"), "");
+                    Anchor.pushError(translate("notification.rejectJoin"), `${packet.type} message response not implemented: ${packet.reason}`);
                     console.error(`${packet.type} message response not implemented: ${packet.reason}`);
                     console.error(packet);
                 break;
             }
-            Anchor.setContent(<StartMenu/>);
+
+            GAME_MANAGER.setDisconnectedState();
+
         break;
         case "rejectStart":
-            /*
-            GameEndsInstantly,
-            RoleListTooSmall,
-            RoleListCannotCreateRoles,
-            ZeroTimeGame,
-            */
             switch(packet.reason) {
                 case "gameEndsInstantly":
-                    Anchor.pushInfo(translate("notification.rejectStart"), translate("notification.rejectStart.gameEndsInstantly"));
+                    Anchor.pushError(translate("notification.rejectStart"), translate("notification.rejectStart.gameEndsInstantly"));
                 break;
                 case "roleListTooSmall":
-                    Anchor.pushInfo(translate("notification.rejectStart"), translate("notification.rejectStart.roleListTooSmall"));
+                    Anchor.pushError(translate("notification.rejectStart"), translate("notification.rejectStart.roleListTooSmall"));
                 break;
                 case "roleListCannotCreateRoles":
-                    Anchor.pushInfo(translate("notification.rejectStart"), translate("notification.rejectStart.roleListCannotCreateRoles"));
+                    Anchor.pushError(translate("notification.rejectStart"), translate("notification.rejectStart.roleListCannotCreateRoles"));
                 break;
                 case "zeroTimeGame":
-                    Anchor.pushInfo(translate("notification.rejectStart"), translate("notification.rejectStart.zeroTimeGame"));
+                    Anchor.pushError(translate("notification.rejectStart"), translate("notification.rejectStart.zeroTimeGame"));
                 break;
                 default:
-                    Anchor.pushInfo(translate("notification.rejectStart"), "");
+                    Anchor.pushError(translate("notification.rejectStart"), "");
                     console.error(`${packet.type} message response not implemented: ${packet.reason}`);
                     console.error(packet);
                 break;
@@ -82,6 +90,13 @@ export default function messageListener(packet: ToClientPacket){
             if(GAME_MANAGER.state.stateType === "lobby"){
                 for(let [playerId, player] of GAME_MANAGER.state.players){
                     player.host = packet.hosts.includes(playerId);
+                }
+            }
+        break;
+        case "playersLostConnection":
+            if(GAME_MANAGER.state.stateType === "lobby"){
+                for(let [playerId, player] of GAME_MANAGER.state.players){
+                    player.lostConnection = packet.lostConnection.includes(playerId);
                 }
             }
         break;
@@ -100,27 +115,12 @@ export default function messageListener(packet: ToClientPacket){
             if(GAME_MANAGER.state.stateType === "lobby"){
                 GAME_MANAGER.state.players = new Map();
                 for(let [playerId, name] of Object.entries(packet.players)){
-                    GAME_MANAGER.state.players.set(Number.parseInt(playerId), {name: name, host: false});
+                    GAME_MANAGER.state.players.set(Number.parseInt(playerId), {name: name, host: false, lostConnection: false});
                 }
-                
             }
-        break;
-        case "kickPlayer":
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //COMPLETLY BROKEN
-            if(GAME_MANAGER.state.stateType === "lobby" && packet.playerId === GAME_MANAGER.state.myId){
-                GAME_MANAGER.leaveGame();
-            }
-            // GAME_MANAGER.gameState = createGameState();
-            // Anchor.setContent(<StartMenu/>)
         break;
         case "startGame":
-            GAME_MANAGER.state = createGameState();
-            Anchor.setContent(GameScreen.createDefault());
+            GAME_MANAGER.setGameState();
         break;
         case "gamePlayers":
             if(GAME_MANAGER.state.stateType === "game"){
@@ -220,7 +220,11 @@ export default function messageListener(packet: ToClientPacket){
         break;
         case "yourPlayerTags":
             if(GAME_MANAGER.state.stateType === "game"){
-                for (const [key, value] of Object.entries(packet.playerTags)) { 
+                for(let i = 0; i < GAME_MANAGER.state.players.length; i++){
+                    GAME_MANAGER.state.players[i].playerTags = [];
+                }
+
+                for(const [key, value] of Object.entries(packet.playerTags)){
                     GAME_MANAGER.state.players[Number.parseInt(key)].playerTags = value as Tag[];
                 }
             }

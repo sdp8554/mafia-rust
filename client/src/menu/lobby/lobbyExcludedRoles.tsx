@@ -9,10 +9,12 @@ import RolePicker from "../../components/RolePicker";
 import StyledText from "../../components/StyledText";
 import ROLES from "./../../resources/roles.json";
 import { Role } from "../../game/roleState.d";
+import EXCLUDED_ROLE_PRESETS from "./../../resources/excludedRolePresets.json";
 
 type ExcludedRolesState = {
     excludedRoles: RoleOutline[],
     roleOutline: RoleOutline,
+    preset: string,
     host: boolean
 }
 
@@ -26,6 +28,7 @@ export default class LobbyExcludedRoles extends React.Component<{}, ExcludedRole
             this.state = {
                 excludedRoles: GAME_MANAGER.state.excludedRoles,
                 roleOutline: {type:"any"},
+                preset: Object.keys(EXCLUDED_ROLE_PRESETS)[0],
                 host: GAME_MANAGER.getMyHost() ?? false
             }
 
@@ -65,13 +68,37 @@ export default class LobbyExcludedRoles extends React.Component<{}, ExcludedRole
 
         GAME_MANAGER.sendExcludedRolesPacket(roles);
     }
-
+    handleExcludedRolePreset(){
+        GAME_MANAGER.sendExcludedRolesPacket(
+            EXCLUDED_ROLE_PRESETS[this.state.preset as "Beginner" | "Intermediate" | "Classic"] as RoleOutline[]
+        );
+    }
+    handleIncludeAll(){
+        GAME_MANAGER.sendExcludedRolesPacket([]);
+    }
     
 
-    render(){return(<section className="excluded-roles">
+    render(){return(<section className="excluded-roles role-specific-colors">
         <header>
             <h2>{translate("menu.lobby.excludedRoles")}</h2>
         </header>
+        <div className="exclusion-preset">
+            <select
+                onChange={(e)=>this.setState({preset: e.target.value})}
+            >
+                {
+                    Object.keys(EXCLUDED_ROLE_PRESETS).map((value, i)=>{
+                        return <option key={i} value={value}>{value}</option>
+                    })
+                }
+            </select>
+        </div>
+            <button 
+                onClick={(e)=>this.handleExcludedRolePreset()}
+            >{translate("menu.excludedRoles.exclude")}</button>
+            <button 
+                onClick={(e)=>this.handleIncludeAll()}
+            >{translate("menu.excludedRoles.includeAll")}</button>
         <div>
             <RolePicker
                 disabled={!this.state.host}

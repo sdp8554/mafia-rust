@@ -4,6 +4,7 @@ import GameState, { LobbyPlayer, LobbyState, Player, PlayerID } from "./gameStat
 export function createLobbyState(): LobbyState {
     return {
         stateType: "lobby",
+        roomCode: "",
 
         myId: null,
 
@@ -26,6 +27,7 @@ export function createLobbyState(): LobbyState {
 export function createGameState(): GameState {
     return {
         stateType: "game",
+        roomCode: "",
 
         myIndex: null,
 
@@ -79,7 +81,7 @@ export function createPlayer(name: string, index: number): Player {
         host: false,
 
         toString() {
-            return ""+(this.index+1)+"-" + this.name;
+            return ""+(this.index+1)+": " + this.name;
         }
     }
 }
